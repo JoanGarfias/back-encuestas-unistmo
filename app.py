@@ -11,3 +11,14 @@ def inicio():
         "tipo_respuesta": "json"
     }
     return jsonify(datos)
+
+
+@app.route('/login')
+
+def login():
+    datos = {
+        "mensaje": "¡Bienvenido a tu API de Flask!",
+        "nombre_usuario": "Lucía",
+        "tipo_respuesta": "json"
+    }
+    return jsonify(datos)
