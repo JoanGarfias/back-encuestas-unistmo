@@ -11,8 +11,6 @@ def inicio():
         "tipo_respuesta": "json"
     }
     return jsonify(datos)
-
-
 @app.route('/login')
 
 def login():
