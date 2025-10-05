@@ -1,4 +1,5 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+import json
 
 app = Flask(__name__)
 
@@ -11,3 +12,26 @@ def inicio():
         "tipo_respuesta": "json"
     }
     return jsonify(datos)
+
+@app.route('/dummy', methods=['POST'])
+def recibirDatos():
+    data = request.get_json()
+    
+    """ Formato esperado del JSON en el body
+    {
+	"matricula": int,
+	"nombre": string,
+	"edad": int,
+	"carrera": string,
+	"semestre": int,
+	"estatura": int,
+	"promedio": double,
+	"discapacidad": bool,
+	"trabaja": bool,
+	"gasto": double
+    }
+    """
+
+
+
+    return data
