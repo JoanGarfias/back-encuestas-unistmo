@@ -1,7 +1,37 @@
-from flask import Flask, jsonify, request
-import json
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy # ejecutar pip install flask flask_sqlalchemy pymysql en la consola si no se tiene de antemano el flask_sqlalchemy
+from urllib.parse import quote_plus
+
+# Datos de la base
+usuario = 'dummy'
+ruta = 'localhost'
+base = 'dummy'
+password = 'nPS@/zo(_2Qm175O'
+encoded_password = quote_plus(password)
+
+
 
 app = Flask(__name__)
+
+# Configuracion para la conexion de la base
+app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{usuario}:{encoded_password}@{ruta}/{base}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    matricula = db.Column(db.Integer, nullable=False)
+    nombre = db.Column(db.String(100), nullable=False)
+    edad = db.Column(db.Integer, nullable=False)
+    carrera = db.Column(db.Integer, nullable=False)
+    semestre = db.Column(db.Integer, nullable=False)
+    estatura = db.Column(db.Integer, nullable=False)
+    promedio = db.Column(db.Float, nullable=False)
+    discapacidad = db.Column(db.Boolean, nullable=False)
+    trabaja = db.Column(db.Boolean, nullable=False)
+    gasto = db.Column(db.Float, nullable=False)
+    rol = db.Column(db.Integer, nullable=False)
 
 @app.route('/')
 
@@ -32,7 +62,7 @@ def recibirDatos():
         """
 
     def error(desc):
-        return jsonify({"status": "error", "mensaje": desc}), 400  # Returning a JSON response with a 400 status code.
+        return jsonify({"status": "error", "mensaje": desc}), 400  # Devuelve un error con codigo 400
         
     if request.method == "POST":
         data = request.get_json()
@@ -54,28 +84,52 @@ def recibirDatos():
 
         # Validar promedio
         if(data['promedio'] < 0.0 or data['promedio'] > 10.0):
-            return error("Promedio no válida.")
+            return error("Promedio no válido.")
 
         # Validar rol
         if data['rol'] not in [0,1]:
             return error("Rol no válido.")
         
 
-        """user = User(
-            matricula = data["matricula"],
-            nombre = data["nombre"],
-            edad = data["edad"],
-            carrera = data["carrera"],
-            estatura = data["estatura"],
-            promedio = data["promedio"],
-            discapacidad = data["discapacidad"],
-            trabaja = data["trabaja"],
-            gasto = data["gasto"],
-            rol = data["rol"],
-        )"""
-        #db.session.add(user)
-        #db.session.commit()
+        try:
+        # Crear un usuario
+            user = User(
+            matricula=data["matricula"],
+            nombre=data["nombre"],
+            edad=data["edad"],
+            carrera=data["carrera"],
+            semestre=data["semestre"],
+            estatura=data["estatura"],
+            promedio=data["promedio"],
+            discapacidad=data["discapacidad"],
+            trabaja=data["trabaja"],
+            gasto=data["gasto"],
+            rol=data["rol"]
+        )
+        except Exception as e:
+            return error(f"Ocurrió un error al crear el usuario: {str(e)}")
+        
+        # Agregar el usuario a la base 
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()  # Deshacer cambios si ocurrio un error
+            return error(f"Ocurrió un error al guardar en la base de datos: {str(e)}")
 
     return jsonify({"status": "success", "mensaje": "Registro exitoso!"}), 201
 
     
+@app.route('/tabla', methods=['GET'])
+def inicio3():
+    with app.app_context():
+        # Inspeccionar la base
+        inspector = inspect(db.engine)
+        
+        # Ver si la tabla 'user' existe
+        if 'user' not in inspector.get_table_names():
+            db.create_all()  # Crea la tabla si no existe
+            return jsonify({"status": "success", "mensaje": "Tabla creada!"}), 201
+        else:
+            print("Tabla ya existe.")
+            return jsonify({"status": "success", "mensaje": "La tabla ya existe!"}), 200
