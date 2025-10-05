@@ -1,21 +1,34 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+
+# Obtener las variables de entorno (para bd)
+import os
+from dotenv import load_dotenv
+load_dotenv()
+from stats import obtener_alumnos_por_carrera
+
+from extensions import db
 
 app = Flask(__name__)
 
+# MYSQL CONFIG
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
+# Cors config
 def isLocalhost(origin):
     return origin == "localhost"
-
 def getOrigins():
     if isLocalhost(app.config['SERVER_NAME']):
         return "localhost"
     else:
         return "https://encuesta.dxicode.com"
-
 CORS(app, resources={r"/*": {"origins": getOrigins() }})
+
+
+# API ROUTES
 
 @app.route('/carreras')
 
@@ -40,6 +53,16 @@ def semestres():
     else:
         semestres = [2,4,6,8,10]
     return jsonify(semestres)
+
+@app.route('/stats')
+
+def stats():
+    resultados = {
+        "stats_carrera": obtener_stats_por_carrera(),
+    }
+    return jsonify(resultados)
+
+
 
 @app.route('/login')
 
