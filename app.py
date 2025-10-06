@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 load_dotenv()
-from stats import obtener_alumnos_por_carrera
+from stats import obtener_stats_completas
 
 from extensions import db
 
@@ -58,7 +58,7 @@ def semestres():
 
 def stats():
     resultados = {
-        "stats_carrera": obtener_stats_por_carrera(),
+        "stats_carrera": obtener_stats_completas(),
     }
     return jsonify(resultados)
 
