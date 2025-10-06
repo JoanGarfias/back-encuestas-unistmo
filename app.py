@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime
 
@@ -30,9 +30,9 @@ CORS(app, resources={r"/*": {"origins": getOrigins() }})
 
 # API ROUTES
 
-@app.route('/carreras')
+@app.route('/carreras', methods=['GET'])
 
-def carreras():
+def get_carreras():
     carreras = [
         "Ing. Computación",
         "Ing. Industrial",
@@ -44,9 +44,9 @@ def carreras():
     ]
     return jsonify(carreras)
 
-@app.route('/semestres')
+@app.route('/semestres', methods=['GET'])
 
-def semestres():
+def get_semestres():
     today = datetime.now().strftime("%d-%m")
     if today < "01-10":
         semestres = [1,3,5,7,9]
@@ -54,9 +54,9 @@ def semestres():
         semestres = [2,4,6,8,10]
     return jsonify(semestres)
 
-@app.route('/stats')
+@app.route('/stats', methods=['GET'])
 
-def stats():
+def get_stats():
     resultados = {
         "stats_carrera": obtener_stats_completas(),
     }
@@ -64,9 +64,9 @@ def stats():
 
 
 
-@app.route('/login')
+@app.route('/login', methods=['POST'])
 
-def login():
+def post_login():
     datos = {
         "mensaje": "¡Bienvenido a tu API de Flask!",
         "nombre_usuario": "Lucía",
