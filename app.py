@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from stats import obtener_stats_completas
+from reports import obtener_reporte_completo
 
 from extensions import db
 
@@ -28,21 +29,33 @@ def getOrigins():
         return "https://encuesta.dxicode.com"
 CORS(app, resources={r"/*": {"origins": getOrigins() }})
 
+carreras = [
+    {"id": 1, "name": "Ing. Computación"},
+    {"id": 2, "name": "Ing. Industrial"},
+    {"id": 3, "name": "Ing. Diseño"},
+    {"id": 4, "name": "Ing. Química"},
+    {"id": 5, "name": "Ing. Energía Renovables"},
+    {"id": 6, "name": "Lic. Matemáticas Aplicadas"},
+    {"id": 7, "name": "Ing. Petróleos"},
+]
+
+def getCarreraName(id: int):
+    if(id == -1):
+        return ""
+    try:
+        return carreras[id - 1]["name"]
+    except Exception as e:
+        return str(e)
+
+
+
+
 
 # API ROUTES
 
 @app.route('/carreras', methods=['GET'])
 
 def get_carreras():
-    carreras = [
-        "Ing. Computación",
-        "Ing. Industrial",
-        "Ing. Diseño",
-        "Ing. Química",
-        "Ing. Energía Renovables",
-        "Lic. Matemáticas Aplicadas",
-        "Ing. Petróleos",
-    ]
     return jsonify({
         "carreras": carreras,
         "length": len(carreras),
@@ -53,7 +66,7 @@ def get_carreras():
 
 def get_semestres():
     today = datetime.now().strftime("%d-%m")
-    if today < "01-10":
+    if today > "01-10" and today < "09-02":
         semestres = [1,3,5,7,9]
     else:
         semestres = [2,4,6,8,10]
@@ -64,12 +77,35 @@ def get_semestres():
 @app.route('/stats', methods=['GET'])
 
 def get_stats():
-    carrera = request.args.get('carrera')
+    id_carrera = request.args.get('id_c')
+    try:
+        id_carrera = int(id_carrera) if id_carrera else -1
+        carrera = getCarreraName(id_carrera)
+    except Exception as e:
+        return jsonify({"error": "El ID de carrera debe ser un número entero válido."}), 400
+
     resultados = {
         "stats_carrera": obtener_stats_completas(carrera),
     }
     return jsonify(resultados)
 
+
+@app.route('/reporte', methods=['GET'])
+
+def get_reporte():
+    id_carrera = request.args.get('id_c')
+    try:
+        id_carrera = int(id_carrera) if id_carrera else -1
+        carrera = getCarreraName(id_carrera)
+    except Exception as e:
+        return jsonify({"error": "El ID de carrera debe ser un número entero válido."}), 400
+
+    actual_page = request.args.get('page', default=0, type=int)
+    num_elements = request.args.get('num_elements', default=10, type=int)
+    resultados = {
+        "reporte": obtener_reporte_completo(actual_page, num_elements, carrera),
+    }
+    return jsonify(resultados)
 
 
 @app.route('/login', methods=['POST'])
@@ -105,7 +141,7 @@ def recibirDatos():
 
     def error(desc):
         return jsonify({"status": "error", "mensaje": desc}), 400  # Devuelve un error con codigo 400
-        
+
     if request.method == "POST":
         data = request.get_json()
 
@@ -180,8 +216,8 @@ def recibirDatos():
         )
         except Exception as e:
             return error(f"Ocurrió un error al crear el usuario: {str(e)}")
-        
-        # Agregar el usuario a la base 
+
+        # Agregar el usuario a la base
         try:
             db.session.add(respuestas)
             db.session.commit()
@@ -190,4 +226,3 @@ def recibirDatos():
             return error(f"Ocurrió un error al guardar en la base de datos: {str(e)}")
 
     return jsonify({"status": "success", "mensaje": "Registro exitoso!"}), 201
-
