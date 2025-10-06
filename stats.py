@@ -1,7 +1,7 @@
 from extensions import db
 from sqlalchemy import text
 
-def obtener_stats_completas(carrera = ""):
+def obtener_stats_completas(carrera: str = ""):
     parametros = {}
     where_clause = ""
 
@@ -16,7 +16,11 @@ def obtener_stats_completas(carrera = ""):
             ROUND(AVG(promedio_anterior), 2) AS promedio_carrera,
             ROUND(AVG(peso), 2) AS peso_carrera,
             ROUND(AVG(altura), 2) AS altura_carrera,
-            ROUND(AVG(edad), 2) AS edad_carrera
+            ROUND(AVG(edad), 2) AS edad_carrera,
+           	SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) AS total_hombres,
+           	SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) AS total_mujeres,
+           	ROUND(SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) * 100.0 / COUNT(id_r), 2) AS porcentaje_hombres,
+            ROUND(SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) * 100.0 / COUNT(id_r), 2) AS porcentaje_mujeres
         FROM
             respuestas
         {where_clause} -- Inyección segura del filtro
@@ -36,7 +40,7 @@ def obtener_stats_completas(carrera = ""):
             COUNT(edad) AS total_por_edad
         FROM
             respuestas
-        {where_clause} -- Reutilizamos el filtro si existe
+        {where_clause}
         GROUP BY
             carrera, edad
         ORDER BY
@@ -61,6 +65,7 @@ def obtener_stats_completas(carrera = ""):
     for stats in stats_generales_dict:
         carrera_nombre = stats['carrera']
         stats['edades'] = mapa_edades.get(carrera_nombre, {})
+
         stats_anidadas.append(stats)
 
     return stats_anidadas

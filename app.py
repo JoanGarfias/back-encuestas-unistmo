@@ -54,11 +54,14 @@ def get_semestres():
         semestres = [2,4,6,8,10]
     return jsonify(semestres)
 
+
+
 @app.route('/stats', methods=['GET'])
 
 def get_stats():
+    carrera = request.args.get('carrera')
     resultados = {
-        "stats_carrera": obtener_stats_completas(),
+        "stats_carrera": obtener_stats_completas(carrera),
     }
     return jsonify(resultados)
 
