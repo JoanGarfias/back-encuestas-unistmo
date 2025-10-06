@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from stats import obtener_stats_completas
+from reports import obtener_reporte_completo
 
 from extensions import db
 
@@ -71,6 +72,17 @@ def get_stats():
     return jsonify(resultados)
 
 
+@app.route('/reporte', methods=['GET'])
+
+def get_reporte():
+    #carrera = request.args.get('carrera')
+    actual_page = request.args.get('page', default=0, type=int)
+    num_elements = request.args.get('num_elements', default=10, type=int)
+    resultados = {
+        "reporte": obtener_reporte_completo(actual_page, num_elements),
+    }
+    return jsonify(resultados)
+
 
 @app.route('/login', methods=['POST'])
 
@@ -105,7 +117,7 @@ def recibirDatos():
 
     def error(desc):
         return jsonify({"status": "error", "mensaje": desc}), 400  # Devuelve un error con codigo 400
-        
+
     if request.method == "POST":
         data = request.get_json()
 
@@ -180,8 +192,8 @@ def recibirDatos():
         )
         except Exception as e:
             return error(f"Ocurrió un error al crear el usuario: {str(e)}")
-        
-        # Agregar el usuario a la base 
+
+        # Agregar el usuario a la base
         try:
             db.session.add(respuestas)
             db.session.commit()
@@ -190,4 +202,3 @@ def recibirDatos():
             return error(f"Ocurrió un error al guardar en la base de datos: {str(e)}")
 
     return jsonify({"status": "success", "mensaje": "Registro exitoso!"}), 201
-
