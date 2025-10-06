@@ -1,3 +1,4 @@
+Gunicorn
 Flask
 Flask-SQLAlchemy
 PyMySQL

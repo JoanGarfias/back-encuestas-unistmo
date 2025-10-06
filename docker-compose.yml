@@ -1,0 +1,15 @@
+services:
+  api-flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask_encuestas_api
+    restart: always
+    expose:
+      - "5000:5000"
+    networks:
+      - dxired
+
+networks:
+  dxired:
+    external: true
