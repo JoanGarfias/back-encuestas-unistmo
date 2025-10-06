@@ -53,7 +53,7 @@ def getCarreraName(id: int):
 
 # API ROUTES
 
-@app.route('/carreras', methods=['GET'])
+@app.route('/api/carreras', methods=['GET'])
 
 def get_carreras():
     return jsonify({
@@ -62,7 +62,7 @@ def get_carreras():
         "message": "Lista de carreras obtenida exitosamente"
     })
 
-@app.route('/semestres', methods=['GET'])
+@app.route('/api/semestres', methods=['GET'])
 
 def get_semestres():
     today = datetime.now().strftime("%d-%m")
@@ -74,7 +74,7 @@ def get_semestres():
 
 
 
-@app.route('/stats', methods=['GET'])
+@app.route('/api/stats', methods=['GET'])
 
 def get_stats():
     id_carrera = request.args.get('id_c')
@@ -90,7 +90,7 @@ def get_stats():
     return jsonify(resultados)
 
 
-@app.route('/reporte', methods=['GET'])
+@app.route('/api/reporte', methods=['GET'])
 
 def get_reporte():
     id_carrera = request.args.get('id_c')
@@ -108,7 +108,7 @@ def get_reporte():
     return jsonify(resultados)
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 
 def post_login():
     datos = {
@@ -119,7 +119,7 @@ def post_login():
     return jsonify(datos)
 
 
-@app.route('/crearregistro', methods=['POST'])
+@app.route('/api/crearregistro', methods=['POST'])
 def recibirDatos():
     """ Formato esperado del JSON en el body
         {
