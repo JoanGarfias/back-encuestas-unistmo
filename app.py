@@ -63,6 +63,7 @@ def recibirDatos():
         "discapacidad": int,
         "peso": double,
         "altura": int,
+        "correo", string
         }
         """
 
