@@ -42,7 +42,11 @@ def get_carreras():
         "Lic. Matemáticas Aplicadas",
         "Ing. Petróleos",
     ]
-    return jsonify(carreras)
+    return jsonify({
+        "carreras": carreras,
+        "length": len(carreras),
+        "message": "Lista de carreras obtenida exitosamente"
+    })
 
 @app.route('/semestres', methods=['GET'])
 
