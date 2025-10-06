@@ -5,6 +5,7 @@ class Respuesta(db.Model):
     id_r = db.Column(db.Integer, primary_key=True, autoincrement=True)
     correo = db.Column(db.String(255), nullable=False)
     carrera = db.Column(db.String(255), nullable=False)
+    semestre = db.Column(db.Integer, nullable=False)
     nombre = db.Column(db.String(255), nullable=False)
     edad = db.Column(db.Integer, nullable=False)
     sexo = db.Column(db.Enum('M', 'F'), nullable=False)
