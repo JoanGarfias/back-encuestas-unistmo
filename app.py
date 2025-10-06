@@ -37,17 +37,7 @@ class Encuestas(db.Model):
     altura = db.Column(db.Integer, nullable=False)
     correo = db.Column(db.String(128), nullable=False, unique=True)
 
-@app.route('/')
-
-def inicio():
-    datos = {
-        "mensaje": "¡Bienvenido a tu API de Flask!",
-        "nombre_usuario": "Lucía",
-        "tipo_respuesta": "json"
-    }
-    return jsonify(datos)
-
-@app.route('/dummy', methods=['POST'])
+@app.route('/crearregistro', methods=['POST'])
 def recibirDatos():
     """ Formato esperado del JSON en el body
         {
@@ -63,7 +53,7 @@ def recibirDatos():
         "discapacidad": int,
         "peso": double,
         "altura": int,
-        "correo", string
+        "correo": string
         }
         """
 
@@ -156,16 +146,8 @@ def recibirDatos():
     return jsonify({"status": "success", "mensaje": "Registro exitoso!"}), 201
 
     
-@app.route('/tabla', methods=['GET'])
+@app.route('/creartablaencuestas', methods=['GET'])
 def inicio3():
     with app.app_context():
-        # Inspeccionar la base
-        #inspector = inspect(db.engine)
-        
-        # Ver si la tabla 'encuestas' existe
-        #if 'encuestas' not in inspector.get_table_names():
         db.create_all()  # Crea la tabla si no existe
         return jsonify({"status": "success", "mensaje": "Tabla creada!"}), 201
-        #else:
-        #    print("Tabla ya existe.")
-        #    return jsonify({"status": "success", "mensaje": "La tabla ya existe!"}), 200
