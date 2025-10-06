@@ -79,10 +79,10 @@ def get_semestres():
 def get_stats():
     id_carrera = request.args.get('id_c')
     try:
-        id_carrera = int(id_carrera) if id_carrera else None
+        id_carrera = int(id_carrera) if id_carrera else -1
         carrera = getCarreraName(id_carrera)
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": "El ID de carrera debe ser un número entero válido."}), 400
 
     resultados = {
         "stats_carrera": obtener_stats_completas(carrera),

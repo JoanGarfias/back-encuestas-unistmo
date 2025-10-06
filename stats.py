@@ -1,7 +1,8 @@
 from extensions import db
 from sqlalchemy import text
+from typing import List, Dict
 
-def obtener_stats_completas(carrera: str = ""):
+def obtener_stats_completas(carrera: str = "") -> List[Dict]:
     parametros = {}
     where_clause = ""
 
@@ -9,23 +10,28 @@ def obtener_stats_completas(carrera: str = ""):
         where_clause = "WHERE carrera = :carrera_param"
         parametros['carrera_param'] = carrera
 
+        select_carrera = "carrera"
+        groupby_clause = "GROUP BY carrera"
+    else:
+        select_carrera = "'Todas' AS carrera"
+        groupby_clause = ""
+
     sql_query_general = text(f"""
         SELECT
-            carrera,
+            {select_carrera},
             COUNT(id_r) AS total_alumnos,
             ROUND(AVG(promedio_anterior), 2) AS promedio_carrera,
             ROUND(AVG(peso), 2) AS peso_carrera,
             ROUND(AVG(altura), 2) AS altura_carrera,
             ROUND(AVG(edad), 2) AS edad_carrera,
-           	SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) AS total_hombres,
-           	SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) AS total_mujeres,
-           	ROUND(SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) * 100.0 / COUNT(id_r), 2) AS porcentaje_hombres,
+            SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) AS total_hombres,
+            SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) AS total_mujeres,
+            ROUND(SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) * 100.0 / COUNT(id_r), 2) AS porcentaje_hombres,
             ROUND(SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) * 100.0 / COUNT(id_r), 2) AS porcentaje_mujeres
         FROM
             respuestas
-        {where_clause} -- Inyección segura del filtro
-        GROUP BY
-            carrera
+        {where_clause}
+        {groupby_clause}
         ORDER BY
             total_alumnos DESC;
     """)
@@ -33,16 +39,18 @@ def obtener_stats_completas(carrera: str = ""):
     stats_generales = db.session.execute(sql_query_general, parametros).all()
     stats_generales_dict = [dict(row._mapping) for row in stats_generales]
 
+    groupby_edades_clause = "GROUP BY edad" if not carrera else "GROUP BY carrera, edad"
+    select_edades_carrera = "'Todas' AS carrera" if not carrera else "carrera"
+
     sql_query_edades = text(f"""
         SELECT
-            carrera,
+            {select_edades_carrera},
             edad,
             COUNT(edad) AS total_por_edad
         FROM
             respuestas
         {where_clause}
-        GROUP BY
-            carrera, edad
+        {groupby_edades_clause}
         ORDER BY
             carrera, edad;
     """)
@@ -65,7 +73,6 @@ def obtener_stats_completas(carrera: str = ""):
     for stats in stats_generales_dict:
         carrera_nombre = stats['carrera']
         stats['edades'] = mapa_edades.get(carrera_nombre, {})
-
         stats_anidadas.append(stats)
 
     return stats_anidadas

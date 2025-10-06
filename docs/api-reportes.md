@@ -83,8 +83,6 @@ El *endpoint* devuelve un objeto JSON con los resultados paginados, donde cada e
 
 ```
 
-### Respuestas de error
-
 ### Respuestas de Error
 
 | **Código** | **Descripción** | **Causa** |
