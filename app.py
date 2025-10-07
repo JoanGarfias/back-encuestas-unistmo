@@ -58,7 +58,7 @@ def validar_correo(email):
 
     query_correo = text("SELECT correo FROM respuestas WHERE correo = :email")
     result = db.session.execute(query_correo, {"email": email})
-    
+
      # Retorna True si el correo ya está registrado, False si no
     return result.fetchone() is not None
 
@@ -129,7 +129,7 @@ def post_login():
     contra = request.json.get('password')
     if not contra:
         return jsonify({"error": "La contraseña es requerida.", "code": 400})
-    if len(contra) !=5:
+    if len(contra) != 5:
         return jsonify({"error": "La contraseña es incorrecta.", "code": 403})
     if pinAdmin == contra:
         return jsonify({"message": "Contraseña correcta.", "code": 200})
