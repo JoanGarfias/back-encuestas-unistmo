@@ -47,8 +47,20 @@ def getCarreraName(id: int):
     except Exception as e:
         return str(e)
 
+# Validar correo
+from sqlalchemy import text
+import re
 
+def validar_correo(email):
+    patron = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(patron, email):
+        return False
 
+    query_correo = text("SELECT correo FROM respuestas WHERE correo = :email")
+    result = db.session.execute(query_correo, {"email": email})
+    
+     # Retorna True si el correo ya está registrado, False si no
+    return result.fetchone() is not None
 
 
 # API ROUTES
@@ -108,15 +120,20 @@ def get_reporte():
     return jsonify(resultados)
 
 
+# Validar contraseña
+pinAdmin = os.getenv("PIN_ADMIN")
+
 @app.route('/api/login', methods=['POST'])
 
 def post_login():
-    datos = {
-        "mensaje": "¡Bienvenido a tu API de Flask!",
-        "nombre_usuario": "Lucía",
-        "tipo_respuesta": "json"
-    }
-    return jsonify(datos)
+    contra = request.json.get('password')
+    if not contra:
+        return jsonify({"error": "La contraseña es requerida.", "code": 400})
+    if len(contra) !=5:
+        return jsonify({"error": "La contraseña es incorrecta.", "code": 403})
+    if pinAdmin == contra:
+        return jsonify({"message": "Contraseña correcta.", "code": 200})
+    return jsonify({"error": "La contraseña es incorrecta.", "code": 403})
 
 
 @app.route('/api/crearregistro', methods=['POST'])
