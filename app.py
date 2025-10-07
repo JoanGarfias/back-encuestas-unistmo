@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from urllib.parse import quote_plus
 from datetime import date, datetime
+from sqlalchemy import text
+import re
 
 # Obtener las variables de entorno (para bd)
 import os
@@ -48,8 +50,6 @@ def getCarreraName(id: int):
         return str(e)
 
 # Validar correo
-from sqlalchemy import text
-import re
 
 def validar_correo(email):
     patron = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
