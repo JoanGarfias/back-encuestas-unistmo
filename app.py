@@ -247,7 +247,7 @@ def recibirDatos():
 
         try:
         # Crear un usuario
-            respuestas = Respuesta(
+            registro = respuestas(
             carrera=data["carrera"],
             nombre=data["nombre"],
             edad=data["edad"],
@@ -268,7 +268,7 @@ def recibirDatos():
 
         # Agregar el usuario a la base
         try:
-            db.session.add(respuestas)
+            db.session.add(registro)
             db.session.commit()
         except Exception as e:
             db.session.rollback()  # Deshacer cambios si ocurrio un error
