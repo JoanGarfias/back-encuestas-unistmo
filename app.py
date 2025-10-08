@@ -15,6 +15,7 @@ from reports import obtener_reporte_completo
 from services.MailService import enviar_correo_simple
 
 from extensions import db, mail
+from models import Respuesta
 import os
 
 app = Flask(__name__)
@@ -247,7 +248,7 @@ def recibirDatos():
 
         try:
         # Crear un usuario
-            registro = respuestas(
+            registro = Respuesta(
             carrera=data["carrera"],
             nombre=data["nombre"],
             edad=data["edad"],
