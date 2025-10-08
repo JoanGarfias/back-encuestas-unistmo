@@ -275,6 +275,20 @@ def recibirDatos():
         try:
             db.session.add(registro)
             db.session.commit()
+
+            correo_destino = data["correo"]
+            nombre = data["nombre"]
+            carrera = data["carrera"]
+
+            asunto = "¡Registro de Encuesta Exitoso!"
+            cuerpo = f"Hola {nombre} de {carrera}, gracias por completar la encuesta de la Universidad del Istmo. Tus datos han sido registrados."
+
+            exito, mensaje = enviar_correo_simple(correo_destino, asunto, cuerpo)
+
+            if exito:
+                return jsonify({"status": "success", "mensaje": "Notificación enviada."}), 200
+            else:
+                return jsonify({"status": "error", "mensaje": f"Fallo en el envío: {mensaje}"}), 500
         except Exception as e:
             db.session.rollback()  # Deshacer cambios si ocurrio un error
             return error(f"Ocurrió un error al guardar en la base de datos: {str(e)}")
