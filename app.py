@@ -18,18 +18,16 @@ app = Flask(__name__)
 
 # MYSQL CONFIG
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SERVER_NAME'] = os.getenv('SERVER_NAME')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 # Cors config
-def isLocalhost(origin):
-    return origin == "localhost"
-def getOrigins():
-    if isLocalhost(app.config['SERVER_NAME']):
-        return "localhost"
-    else:
-        return "https://encuesta.dxicode.com"
-CORS(app, resources={r"/*": {"origins": getOrigins() }})
+origins = [
+    "http://localhost:5173",
+    "https://encuesta.dxicode.com"
+]
+CORS(app, resources={r"/*": {"origins": origins}})
 
 carreras = [
     {"id": 1, "name": "Ing. Computación"},
@@ -58,7 +56,7 @@ def validar_correo(email):
 
     query_correo = text("SELECT correo FROM respuestas WHERE correo = :email")
     result = db.session.execute(query_correo, {"email": email})
-    
+
      # Retorna True si el correo ya está registrado, False si no
     return result.fetchone() is not None
 
@@ -129,7 +127,7 @@ def post_login():
     contra = request.json.get('password')
     if not contra:
         return jsonify({"error": "La contraseña es requerida.", "code": 400})
-    if len(contra) !=5:
+    if len(contra) != 5:
         return jsonify({"error": "La contraseña es incorrecta.", "code": 403})
     if pinAdmin == contra:
         return jsonify({"message": "Contraseña correcta.", "code": 200})
