@@ -5,3 +5,5 @@ PyMySQL
 Flask-CORS
 python-dotenv
 flask-cors
+Flask-Mail
+cryptography
