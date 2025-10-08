@@ -222,10 +222,6 @@ def recibirDatos():
         if(data["promedio_anterior"] < 0.0 or data["promedio_anterior"] > 10.0):
             return error("Promedio no válido.")
 
-        # Validar altura
-        if(data['altura'] < 100 or data['altura'] > 230):
-            return error("Altura no válida.")
-
         # Validar tiempo_traslado
         if(data["tiempo_traslado"] < 0 or data["tiempo_traslado"] > 300):
             return error("Tiempo de traslado no válido.")
@@ -233,6 +229,14 @@ def recibirDatos():
         # Validar si trabaja
         if data['trabaja'] not in [0,1]:
             return error("Opcion de trabajo no válida.")
+
+        # Validar gasto mensual
+        if(data['gasto_mensual'] < 0.0):
+            return error("Gasto mensual no válido.")
+
+        # Validar si tiene una discapacidad
+        if data['discapacidad'] not in [0,1]:
+            return error("Opcion de discapacidad no válida.")
 
         # Validar peso
         if(data['peso'] < 40 or data['peso'] > 200):
