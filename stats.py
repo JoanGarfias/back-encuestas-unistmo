@@ -20,14 +20,39 @@ def obtener_stats_completas(carrera: str = "") -> List[Dict]:
         SELECT
             {select_carrera},
             COUNT(id_r) AS total_alumnos,
-            ROUND(AVG(promedio_anterior), 2) AS promedio_carrera,
-            ROUND(AVG(peso), 2) AS peso_carrera,
-            ROUND(AVG(altura), 2) AS altura_carrera,
-            ROUND(AVG(edad), 2) AS edad_carrera,
-            SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) AS total_hombres,
-            SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) AS total_mujeres,
-            ROUND(SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) * 100.0 / COUNT(id_r), 2) AS porcentaje_hombres,
-            ROUND(SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) * 100.0 / COUNT(id_r), 2) AS porcentaje_mujeres
+           	ROUND(AVG(promedio_anterior), 2) AS promedio_carrera,
+           	ROUND(AVG(peso), 2) AS peso_carrera,
+           	ROUND(AVG(altura), 2) AS altura_carrera,
+           	ROUND(AVG(edad), 2) AS edad_carrera,
+           	SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) AS total_hombres,
+           	SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) AS total_mujeres,
+           	COALESCE(ROUND(
+       	        SUM(CASE WHEN sexo = 'M' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(id_r), 0),
+            2), 0) AS porcentaje_hombres,
+            COALESCE(ROUND(
+                SUM(CASE WHEN sexo = 'F' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(id_r), 0),
+            2), 0) AS porcentaje_mujeres,
+            SUM(discapacidad) AS discapacidad_carrera,
+            SUM(CASE WHEN discapacidad != 0 AND sexo = 'F' THEN 1 ELSE 0 END) AS discapacidad_mujeres,
+            SUM(CASE WHEN discapacidad != 0 AND sexo = 'M' THEN 1 ELSE 0 END) AS discapacidad_hombres,
+            COALESCE(ROUND(
+                SUM(CASE WHEN discapacidad != 0 AND sexo = 'F' THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(discapacidad), 0),
+            2), 0) AS porcentaje_discapacidad_mujeres,
+            COALESCE(ROUND(
+                SUM(CASE WHEN discapacidad != 0 AND sexo = 'M' THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(discapacidad), 0),
+            2), 0) AS porcentaje_discapacidad_hombres,
+            SUM(trabaja) AS trabaja_carrera,
+            SUM(CASE WHEN trabaja != 0 AND sexo = 'F' THEN 1 ELSE 0 END) AS trabaja_mujeres,
+            SUM(CASE WHEN trabaja != 0 AND sexo = 'M' THEN 1 ELSE 0 END) AS trabaja_hombres,
+            COALESCE(ROUND(
+                SUM(CASE WHEN trabaja != 0 THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(id_r), 0),
+            2), 0) AS porcentaje_trabaja,
+            COALESCE(ROUND(
+                SUM(CASE WHEN trabaja != 0 AND sexo = 'F' THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(trabaja), 0),
+            2), 0) AS porcentaje_trabaja_mujeres,
+            COALESCE(ROUND(
+                SUM(CASE WHEN trabaja != 0 AND sexo = 'M' THEN 1 ELSE 0 END) * 100.0 / NULLIF(SUM(trabaja), 0),
+            2), 0) AS porcentaje_trabaja_hombres
         FROM
             respuestas
         {where_clause}
