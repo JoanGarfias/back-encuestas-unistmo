@@ -2,17 +2,20 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from urllib.parse import quote_plus
 from datetime import date, datetime
+
 from sqlalchemy import text
+from flask_mail import Mail, Message
 import re
 
 # Obtener las variables de entorno (para bd)
-import os
 from dotenv import load_dotenv
 load_dotenv()
 from stats import obtener_stats_completas
 from reports import obtener_reporte_completo
+from services.MailService import enviar_correo_simple
 
-from extensions import db
+from extensions import db, mail
+import os
 
 app = Flask(__name__)
 
@@ -28,6 +31,19 @@ origins = [
     "https://encuesta.dxicode.com"
 ]
 CORS(app, resources={r"/*": {"origins": origins}})
+
+
+# --- Configuración de Flask-Mail
+app.config['MAIL_SERVER'] = os.getenv('SMTP_HOST')
+app.config['MAIL_PORT'] = os.getenv('SMTP_PORT')
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('SMTP_USER')
+app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASS')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+print(f"DEBUG: MAIL_DEFAULT_SENDER is set to: {app.config['MAIL_DEFAULT_SENDER']}")
+
+mail.init_app(app)
+
 
 carreras = [
     {"id": 1, "name": "Ing. Computación"},
@@ -62,6 +78,24 @@ def validar_correo(email):
 
 
 # API ROUTES
+
+
+# @app.route('/api/correo', methods=['POST'])
+# def notificar_registro():
+#     data = request.get_json()
+#     correo_destino = data.get('correo', 'destinatario@ejemplo.com')
+
+#     asunto = "¡Registro de Encuesta Exitoso!"
+#     cuerpo = f"Hola {correo_destino}, gracias por completar la encuesta de la UNISTMO. Tus datos han sido registrados."
+
+#     exito, mensaje = enviar_correo_simple(correo_destino, asunto, cuerpo)
+
+#     if exito:
+#         return jsonify({"status": "success", "mensaje": "Notificación enviada."})
+#     else:
+#         return jsonify({"status": "error", "mensaje": f"Fallo en el envío: {mensaje}"}), 500
+
+
 
 @app.route('/api/carreras', methods=['GET'])
 
