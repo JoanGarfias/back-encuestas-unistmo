@@ -1,4 +1,4 @@
-from app import db # Asume que 'db = SQLAlchemy(app)' está en app.py
+from extensions import db
 
 class Respuesta(db.Model):
     __tablename__ = 'respuestas'
