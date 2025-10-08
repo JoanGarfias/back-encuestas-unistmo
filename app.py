@@ -250,6 +250,9 @@ def recibirDatos():
         if(not data["correo"]):
             return error("No se permite un correo vacio.")
 
+        if validar_correo(data['correo']):
+            return jsonify({"status": "error", "mensaje": "El correo ya ha sido registrado."}), 403
+
         try:
         # Crear un usuario
             registro = Respuesta(
