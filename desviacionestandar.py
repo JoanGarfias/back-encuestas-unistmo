@@ -5,88 +5,143 @@ import math
 from flask import jsonify
 
 def obtener_desviacion_estandar(carrera: str = "") -> List[Dict]:
-    parametros = {}
-    where_clause = ""
+    try:
+        parametros = {}
+        where_clause = ""
 
-    #Obtencion de promedios de los datos a los que se les sacara desviacion para la carrera elegida
-    if carrera:
-        where_clause = "WHERE carrera = :carrera_param"
-        parametros['carrera_param'] = carrera
-        select_carrera = "carrera"
-        groupby_clause = "GROUP BY carrera"
-    else:
-        select_carrera = "'Todas' AS carrera"
-        groupby_clause = ""
+        #Obtencion de promedios de los datos a los que se les sacara desviacion para la carrera elegida
+        if carrera:
+            where_clause = "WHERE carrera = :carrera_param"
+            parametros['carrera_param'] = carrera
+            select_carrera = "carrera"
+            groupby_clause = "GROUP BY carrera"
+        else:
+            select_carrera = "'Todas' AS carrera"
+            groupby_clause = ""
 
-    sql_query_general = text(f"""
-        SELECT
-            {select_carrera},
-            COUNT(id_r) AS total_alumnos,
-            ROUND(AVG(edad), 2) AS edad_carrera,
-            ROUND(AVG(semestre), 2) AS semestre_carrera,
-            ROUND(AVG(promedio_anterior), 2) AS promedio_anterior_carrera,
-            ROUND(AVG(tiempo_traslado), 2) AS tiempo_traslado_carrera,
-            ROUND(AVG(gasto_mensual), 2) AS gasto_mensual_carrera,
-            ROUND(AVG(peso), 2) AS peso_carrera,
-            ROUND(AVG(altura), 2) AS altura_carrera
-        FROM
-            respuestas
-        {where_clause}
-        {groupby_clause}
-        ORDER BY
-            total_alumnos DESC;
-    """)
-
-    stats_generales = db.session.execute(sql_query_general, parametros).all()
-    stats_generales_dict = [dict(row._mapping) for row in stats_generales]
-
-    if not stats_generales_dict:
-        return jsonify({"status": "error", "mensaje": "No hay datos disponibles"}), 400
-
-    total_alumnos = stats_generales_dict[0]['total_alumnos']
-
-    if total_alumnos < 2:
-        return jsonify({"status": "error", "mensaje": "No se puede sacar la desviación con una muestra de 1 o menos datos"}), 400
-
-    #Diccionario donde se guardaran todas las desviaciones de la carrera elegida
-    desviacion = {
-        "carrera": stats_generales_dict[0]["carrera"],
-        "total_alumnos": total_alumnos
-    }
-
-    elementos_desviacion = ["edad", "semestre", "promedio_anterior", "tiempo_traslado", "gasto_mensual", "peso", "altura"]
-
-    for item in elementos_desviacion:
-        #Por cada elemento en la lista elementos_desviacion, se obtienen todas las muestras de esa carrera, para sacar su desviacion
         sql_query_general = text(f"""
             SELECT
-                id_r,
-                {item}
+                {select_carrera},
+                COUNT(id_r) AS total_alumnos,
+                ROUND(AVG(edad), 2) AS edad_carrera,
+                ROUND(AVG(semestre), 2) AS semestre_carrera,
+                ROUND(AVG(promedio_anterior), 2) AS promedio_anterior_carrera,
+                ROUND(AVG(tiempo_traslado), 2) AS tiempo_traslado_carrera,
+                ROUND(AVG(gasto_mensual), 2) AS gasto_mensual_carrera,
+                ROUND(AVG(peso), 2) AS peso_carrera,
+                ROUND(AVG(altura), 2) AS altura_carrera
             FROM
                 respuestas
             {where_clause}
+            {groupby_clause}
             ORDER BY
-                id_r DESC;
+                total_alumnos DESC;
         """)
 
-        muestras = db.session.execute(sql_query_general, parametros).all()
-        muestras_dict = [dict(row._mapping) for row in muestras]
+        stats_generales = db.session.execute(sql_query_general, parametros).all()
+        stats_generales_dict = [dict(row._mapping) for row in stats_generales]
 
-        suma_total = 0
-        elem = item + "_carrera"
-        media = stats_generales_dict[0][elem]
+        if not stats_generales_dict:
+            return jsonify({"status": "error", "mensaje": "No hay datos disponibles"}), 400
 
-        for item2 in muestras_dict:
-            #Obtencion de restas al cadrado y sumandolo al total, para poder sacar la varianza
-            resta_cuadrado = (item2[item] - media) ** 2
-            suma_total += resta_cuadrado
+        total_alumnos = stats_generales_dict[0]['total_alumnos']
 
-        varianza = suma_total / (total_alumnos - 1)
-        desviacion_media = math.sqrt(varianza)
+        if total_alumnos < 2:
+            return jsonify({"status": "error", "mensaje": "No se puede sacar la desviación con una muestra de 1 o menos datos"}), 400
 
-        cad_varianza = item + "_varianza"
-        cad_desviacion = item + "_desviacion"
-        desviacion[cad_varianza] = round(varianza, 2)
-        desviacion[cad_desviacion] = round(desviacion_media, 2)
+        #Diccionario donde se guardaran todas las desviaciones de la carrera elegida
+        desviacion = {
+            "carrera": stats_generales_dict[0]["carrera"],
+            "total_alumnos": total_alumnos
+        }
 
-    return jsonify(desviacion)
+        elementos_desviacion = ["edad", "semestre", "promedio_anterior", "tiempo_traslado", "gasto_mensual", "peso", "altura"]
+
+        for item in elementos_desviacion:
+            #Por cada elemento en la lista elementos_desviacion, se obtienen todas las muestras de esa carrera, para sacar su desviacion
+            sql_query_general = text(f"""
+                SELECT
+                    id_r,
+                    {item}
+                FROM
+                    respuestas
+                {where_clause}
+                ORDER BY
+                    id_r DESC;
+            """)
+
+            muestras = db.session.execute(sql_query_general, parametros).all()
+            muestras_dict = [dict(row._mapping) for row in muestras]
+
+            suma_total = 0
+            elem = item + "_carrera"
+            media = stats_generales_dict[0][elem]
+
+            for item2 in muestras_dict:
+                #Obtencion de restas al cadrado y sumandolo al total, para poder sacar la varianza
+                resta_cuadrado = (item2[item] - media) ** 2
+                suma_total += resta_cuadrado
+
+            varianza = suma_total / (total_alumnos - 1)
+            desviacion_media = math.sqrt(varianza)
+
+            cad_varianza = item + "_varianza"
+            cad_desviacion = item + "_desviacion"
+            desviacion[cad_varianza] = round(varianza, 2)
+            desviacion[cad_desviacion] = round(desviacion_media, 2)
+
+        return jsonify(desviacion), 200
+
+    except Exception as e:
+        print(f"Error en obtener_desviacion_estandar: {e}")
+        return jsonify({"status": "error", "mensaje": "Error interno en el servidor", "detalle": str(e)}), 500
+
+def test(carrera: str = "") -> List[Dict]:
+    try:
+        parametros = {}
+        where_clause = ""
+
+        #Obtencion de promedios de los datos a los que se les sacara desviacion para la carrera elegida
+        if carrera:
+            where_clause = "WHERE carrera = :carrera_param"
+            parametros['carrera_param'] = carrera
+            select_carrera = "carrera"
+            groupby_clause = "GROUP BY carrera"
+        else:
+            select_carrera = "'Todas' AS carrera"
+            groupby_clause = ""
+
+        sql_query_general = text(f"""
+            SELECT
+                {select_carrera},
+                COUNT(id_r) AS total_alumnos,
+                ROUND(AVG(edad), 2) AS edad_carrera,
+                ROUND(AVG(semestre), 2) AS semestre_carrera,
+                ROUND(AVG(promedio_anterior), 2) AS promedio_anterior_carrera,
+                ROUND(AVG(tiempo_traslado), 2) AS tiempo_traslado_carrera,
+                ROUND(AVG(gasto_mensual), 2) AS gasto_mensual_carrera,
+                ROUND(AVG(peso), 2) AS peso_carrera,
+                ROUND(AVG(altura), 2) AS altura_carrera,
+                ROUND(STDDEV_SAMP(edad), 2) AS edad_desviacion,
+                ROUND(STDDEV_SAMP(semestre), 2) AS semestre_desviacion,
+                ROUND(STDDEV_SAMP(promedio_anterior), 2) AS promedio_anterior_desviacion,
+                ROUND(STDDEV_SAMP(tiempo_traslado), 2) AS tiempo_traslado_desviacion,
+                ROUND(STDDEV_SAMP(gasto_mensual), 2) AS gasto_mensual_desviacion,
+                ROUND(STDDEV_SAMP(peso), 2) AS peso_desviacion,
+                ROUND(STDDEV_SAMP(altura), 2) AS altura_desviacion
+            FROM
+                respuestas
+            {where_clause}
+            {groupby_clause}
+            ORDER BY
+                total_alumnos DESC;
+        """)
+
+        stats_generales = db.session.execute(sql_query_general, parametros).all()
+        stats_generales_dict = [dict(row._mapping) for row in stats_generales]
+
+        return jsonify(stats_generales_dict), 200
+
+    except Exception as e:
+        print(f"Error en obtener_desviacion_estandar: {e}")
+        return jsonify({"status": "error", "mensaje": "Error interno en el servidor", "detalle": str(e)}), 500
