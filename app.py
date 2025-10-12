@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from stats import obtener_stats_completas
 from reports import obtener_reporte_completo
-from desviacionestandar import obtener_desviacion_estandar, test
+from desviacionestandar import obtener_desviacion_estandar
 from services.MailService import enviar_correo_simple
 
 from extensions import db, mail
@@ -312,19 +312,4 @@ def get_desviacion_estandar():
     resultados = {
         "desviacion_estandar_carrera": obtener_desviacion_estandar(carrera),
     }
-    return jsonify(resultados)
-
-@app.route('/api/testing', methods=['GET'])
-
-def get_desviacion_estandar_testing():
-    id_carrera = request.args.get('id_c')
-    try:
-        id_carrera = int(id_carrera) if id_carrera else -1
-        carrera = getCarreraName(id_carrera)
-    except Exception as e:
-        return jsonify({"error": "El ID de carrera debe ser un número entero válido."}), 400
-
-    resultados = {
-        "desviacion_estandar_carrera": test(carrera),
-    }
-    return jsonify(resultados)
+    return resultados
