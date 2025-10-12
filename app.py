@@ -316,7 +316,7 @@ def get_desviacion_estandar():
 
 @app.route('/api/testing', methods=['GET'])
 
-def get_desviacion_estandar():
+def get_desviacion_estandar_testing():
     id_carrera = request.args.get('id_c')
     try:
         id_carrera = int(id_carrera) if id_carrera else -1
