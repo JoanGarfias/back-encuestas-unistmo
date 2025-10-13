@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
+import pandas as pd
 from urllib.parse import quote_plus
 from datetime import date, datetime
 
@@ -11,13 +12,14 @@ import re
 from dotenv import load_dotenv
 load_dotenv()
 from stats import obtener_stats_completas
-from reports import obtener_reporte_completo
+from reports import obtener_reporte_completo, generar_reporte_excel
 from desviacionestandar import obtener_desviacion_estandar, test
 from services.MailService import enviar_correo_simple
 
 from extensions import db, mail
 from models import Respuesta
 import os
+import io
 
 app = Flask(__name__)
 
@@ -313,6 +315,50 @@ def get_desviacion_estandar():
         "desviacion_estandar_carrera": obtener_desviacion_estandar(carrera),
     }
     return jsonify(resultados)
+
+
+@app.route('/api/descargar-excel', methods=['GET'])
+def descargar_excel():
+    id_carrera = request.args.get('id_c')
+    try:
+        id_carrera = int(id_carrera) if id_carrera else -1
+        carrera = getCarreraName(id_carrera)
+    except Exception as e:
+        return jsonify({"error": "El ID de carrera debe ser un número entero válido."}), 400
+
+    try:
+        datos_bytes = generar_reporte_excel(carrera)
+
+        # Determine if bytes look like XLSX (PK zip header) or CSV
+        is_xlsx = False
+        if isinstance(datos_bytes, (bytes, bytearray)) and datos_bytes[:2] == b'PK':
+            is_xlsx = True
+
+        nombre_archivo = "reporte"
+        if(carrera):
+            nombre_archivo += f"_{carrera.replace(' ', '_')}"
+        else:
+            nombre_archivo += "_general"
+
+        if is_xlsx:
+            mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            download_name = f'{nombre_archivo}.xlsx'
+        else:
+            mimetype = 'text/csv'
+            download_name = f'{nombre_archivo}.csv'
+
+        return send_file(
+            io.BytesIO(datos_bytes),
+            mimetype=mimetype,
+            as_attachment=True,
+            download_name=download_name
+        )
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "mensaje": f"Error al generar el reporte: {str(e)}"
+        }), 500
 
 @app.route('/api/testing', methods=['GET'])
 
