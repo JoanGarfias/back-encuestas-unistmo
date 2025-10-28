@@ -1,5 +1,8 @@
 # Back-end Encuestas UNISTMO
 
+<img width="1922" height="916" alt="image" src="https://github.com/user-attachments/assets/aef7dd54-9a9d-4e21-a97c-84e9bac952c4" />
+<img width="1922" height="916" alt="image" src="https://github.com/user-attachments/assets/398bb7b2-a554-42c0-8c7c-147be81f4d60" />
+
 Este es el repositorio del back-end para el proyecto de encuestas de la materia de Probabilidad y Estadística de la Universidad del Istmo, carrera de Ingeniería en Computación.
 
 ## Descripción
